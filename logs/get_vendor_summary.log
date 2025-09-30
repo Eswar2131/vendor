@@ -1,0 +1,486 @@
+2025-08-12 22:36:26,647 - INFO - Creating Vendor Summary Table...
+2025-08-12 22:36:26,647 - ERROR - Error occurred: Execution failed on sql '
+    WITH FreightSummary AS (
+        SELECT VendorNumber, SUM(Freight) AS FreightCost
+        FROM vendor_invoice
+        GROUP BY VendorNumber
+    ), 
+    PurchaseSummary AS (
+        SELECT p.VendorNumber, p.VendorName, p.Brand, p.Description, p.PurchasePrice,
+               pp.Price AS ActualPrice, pp.Volume,
+               SUM(p.Quantity) AS TotalPurchaseQuantity,
+               SUM(p.Dollars) AS TotalPurchaseDollars
+        FROM purchases p
+        JOIN purchase_prices pp ON p.Brand = pp.Brand
+        WHERE p.PurchasePrice > 0
+        GROUP BY p.VendorNumber, p.VendorName, p.Brand, p.Description,
+                 p.PurchasePrice, pp.Price, pp.Volume
+    ), 
+    SalesSummary AS (
+        SELECT VendorNo, Brand,
+               SUM(SalesQuantity) AS TotalSalesQuantity,
+               SUM(SalesDollars) AS TotalSalesDollars,
+               SUM(SalesPrice) AS TotalSalesPrice,
+               SUM(ExciseTax) AS TotalExciseTax
+        FROM sales
+        GROUP BY VendorNo, Brand
+    ) 
+    SELECT ps.VendorNumber, ps.VendorName, ps.Brand, ps.Description,
+           ps.PurchasePrice, ps.ActualPrice, ps.Volume,
+           ps.TotalPurchaseQuantity, ps.TotalPurchaseDollars,
+           ss.TotalSalesQuantity, ss.TotalSalesDollars, ss.TotalSalesPrice,
+           ss.TotalExciseTax, fs.FreightCost
+    FROM PurchaseSummary ps
+    LEFT JOIN SalesSummary ss 
+        ON ps.VendorNumber = ss.VendorNo AND ps.Brand = ss.Brand
+    LEFT JOIN FreightSummary fs 
+        ON ps.VendorNumber = fs.VendorNumber
+    ORDER BY ps.TotalPurchaseDollars DESC
+    ': no such table: purchases
+Traceback (most recent call last):
+  File "C:\Users\munis\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\io\sql.py", line 2674, in execute
+    cur.execute(sql, *args)
+sqlite3.OperationalError: no such table: purchases
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\vendor perfomence\get_vendor_summary.py", line 88, in <module>
+    summary_df = create_vendor_summary(conn)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\vendor perfomence\get_vendor_summary.py", line 65, in create_vendor_summary
+    return pd.read_sql_query(query, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\munis\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\io\sql.py", line 526, in read_sql_query
+    return pandas_sql.read_query(
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\munis\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\io\sql.py", line 2738, in read_query
+    cursor = self.execute(sql, params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\munis\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\io\sql.py", line 2686, in execute
+    raise ex from exc
+pandas.errors.DatabaseError: Execution failed on sql '
+    WITH FreightSummary AS (
+        SELECT VendorNumber, SUM(Freight) AS FreightCost
+        FROM vendor_invoice
+        GROUP BY VendorNumber
+    ), 
+    PurchaseSummary AS (
+        SELECT p.VendorNumber, p.VendorName, p.Brand, p.Description, p.PurchasePrice,
+               pp.Price AS ActualPrice, pp.Volume,
+               SUM(p.Quantity) AS TotalPurchaseQuantity,
+               SUM(p.Dollars) AS TotalPurchaseDollars
+        FROM purchases p
+        JOIN purchase_prices pp ON p.Brand = pp.Brand
+        WHERE p.PurchasePrice > 0
+        GROUP BY p.VendorNumber, p.VendorName, p.Brand, p.Description,
+                 p.PurchasePrice, pp.Price, pp.Volume
+    ), 
+    SalesSummary AS (
+        SELECT VendorNo, Brand,
+               SUM(SalesQuantity) AS TotalSalesQuantity,
+               SUM(SalesDollars) AS TotalSalesDollars,
+               SUM(SalesPrice) AS TotalSalesPrice,
+               SUM(ExciseTax) AS TotalExciseTax
+        FROM sales
+        GROUP BY VendorNo, Brand
+    ) 
+    SELECT ps.VendorNumber, ps.VendorName, ps.Brand, ps.Description,
+           ps.PurchasePrice, ps.ActualPrice, ps.Volume,
+           ps.TotalPurchaseQuantity, ps.TotalPurchaseDollars,
+           ss.TotalSalesQuantity, ss.TotalSalesDollars, ss.TotalSalesPrice,
+           ss.TotalExciseTax, fs.FreightCost
+    FROM PurchaseSummary ps
+    LEFT JOIN SalesSummary ss 
+        ON ps.VendorNumber = ss.VendorNo AND ps.Brand = ss.Brand
+    LEFT JOIN FreightSummary fs 
+        ON ps.VendorNumber = fs.VendorNumber
+    ORDER BY ps.TotalPurchaseDollars DESC
+    ': no such table: purchases
+2025-08-12 22:36:26,687 - INFO - Database connection closed.
+2025-08-12 22:37:38,395 - ERROR - Missing CSV file: data\purchases.csv
+2025-08-12 22:37:38,395 - ERROR - Error occurred: Required CSV not found: data\purchases.csv
+Traceback (most recent call last):
+  File "D:\vendor perfomence\get_vendor_summary.py", line 118, in <module>
+    load_csv_to_db(conn)
+  File "D:\vendor perfomence\get_vendor_summary.py", line 40, in load_csv_to_db
+    raise FileNotFoundError(f"Required CSV not found: {file_path}")
+FileNotFoundError: Required CSV not found: data\purchases.csv
+2025-08-12 22:37:38,397 - INFO - Database connection closed.
+2025-08-12 22:45:12,049 - INFO - Loading purchases.csv into table 'purchases'...
+2025-08-12 22:45:12,081 - INFO - Loaded 30 rows into 'purchases'.
+2025-08-12 22:45:12,081 - INFO - Loading vendor_invoice.csv into table 'vendor_invoice'...
+2025-08-12 22:45:12,089 - INFO - Loaded 30 rows into 'vendor_invoice'.
+2025-08-12 22:45:12,089 - INFO - Loading purchase_prices.csv into table 'purchase_prices'...
+2025-08-12 22:45:12,099 - INFO - Loaded 30 rows into 'purchase_prices'.
+2025-08-12 22:45:12,099 - INFO - Loading sales.csv into table 'sales'...
+2025-08-12 22:45:12,110 - INFO - Loaded 30 rows into 'sales'.
+2025-08-12 22:45:12,111 - INFO - Creating Vendor Summary Table...
+2025-08-12 22:45:12,111 - ERROR - Error occurred: Execution failed on sql '
+    WITH FreightSummary AS (
+        SELECT VendorNumber, SUM(Freight) AS FreightCost
+        FROM vendor_invoice
+        GROUP BY VendorNumber
+    ), 
+    PurchaseSummary AS (
+        SELECT p.VendorNumber, p.VendorName, p.Brand, p.Description, p.PurchasePrice,
+               pp.Price AS ActualPrice, pp.Volume,
+               SUM(p.Quantity) AS TotalPurchaseQuantity,
+               SUM(p.Dollars) AS TotalPurchaseDollars
+        FROM purchases p
+        JOIN purchase_prices pp ON p.Brand = pp.Brand
+        WHERE p.PurchasePrice > 0
+        GROUP BY p.VendorNumber, p.VendorName, p.Brand, p.Description,
+                 p.PurchasePrice, pp.Price, pp.Volume
+    ), 
+    SalesSummary AS (
+        SELECT VendorNo, Brand,
+               SUM(SalesQuantity) AS TotalSalesQuantity,
+               SUM(SalesDollars) AS TotalSalesDollars,
+               SUM(SalesPrice) AS TotalSalesPrice,
+               SUM(ExciseTax) AS TotalExciseTax
+        FROM sales
+        GROUP BY VendorNo, Brand
+    ) 
+    SELECT ps.VendorNumber, ps.VendorName, ps.Brand, ps.Description,
+           ps.PurchasePrice, ps.ActualPrice, ps.Volume,
+           ps.TotalPurchaseQuantity, ps.TotalPurchaseDollars,
+           ss.TotalSalesQuantity, ss.TotalSalesDollars, ss.TotalSalesPrice,
+           ss.TotalExciseTax, fs.FreightCost
+    FROM PurchaseSummary ps
+    LEFT JOIN SalesSummary ss 
+        ON ps.VendorNumber = ss.VendorNo AND ps.Brand = ss.Brand
+    LEFT JOIN FreightSummary fs 
+        ON ps.VendorNumber = fs.VendorNumber
+    ORDER BY ps.TotalPurchaseDollars DESC
+    ': no such column: p.Brand
+Traceback (most recent call last):
+  File "C:\Users\munis\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\io\sql.py", line 2674, in execute
+    cur.execute(sql, *args)
+sqlite3.OperationalError: no such column: p.Brand
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\vendor perfomence\get_vendor_summary.py", line 122, in <module>
+    summary_df = create_vendor_summary(conn)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\vendor perfomence\get_vendor_summary.py", line 93, in create_vendor_summary
+    return pd.read_sql_query(query, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\munis\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\io\sql.py", line 526, in read_sql_query
+    return pandas_sql.read_query(
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\munis\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\io\sql.py", line 2738, in read_query
+    cursor = self.execute(sql, params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\munis\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\io\sql.py", line 2686, in execute
+    raise ex from exc
+pandas.errors.DatabaseError: Execution failed on sql '
+    WITH FreightSummary AS (
+        SELECT VendorNumber, SUM(Freight) AS FreightCost
+        FROM vendor_invoice
+        GROUP BY VendorNumber
+    ), 
+    PurchaseSummary AS (
+        SELECT p.VendorNumber, p.VendorName, p.Brand, p.Description, p.PurchasePrice,
+               pp.Price AS ActualPrice, pp.Volume,
+               SUM(p.Quantity) AS TotalPurchaseQuantity,
+               SUM(p.Dollars) AS TotalPurchaseDollars
+        FROM purchases p
+        JOIN purchase_prices pp ON p.Brand = pp.Brand
+        WHERE p.PurchasePrice > 0
+        GROUP BY p.VendorNumber, p.VendorName, p.Brand, p.Description,
+                 p.PurchasePrice, pp.Price, pp.Volume
+    ), 
+    SalesSummary AS (
+        SELECT VendorNo, Brand,
+               SUM(SalesQuantity) AS TotalSalesQuantity,
+               SUM(SalesDollars) AS TotalSalesDollars,
+               SUM(SalesPrice) AS TotalSalesPrice,
+               SUM(ExciseTax) AS TotalExciseTax
+        FROM sales
+        GROUP BY VendorNo, Brand
+    ) 
+    SELECT ps.VendorNumber, ps.VendorName, ps.Brand, ps.Description,
+           ps.PurchasePrice, ps.ActualPrice, ps.Volume,
+           ps.TotalPurchaseQuantity, ps.TotalPurchaseDollars,
+           ss.TotalSalesQuantity, ss.TotalSalesDollars, ss.TotalSalesPrice,
+           ss.TotalExciseTax, fs.FreightCost
+    FROM PurchaseSummary ps
+    LEFT JOIN SalesSummary ss 
+        ON ps.VendorNumber = ss.VendorNo AND ps.Brand = ss.Brand
+    LEFT JOIN FreightSummary fs 
+        ON ps.VendorNumber = fs.VendorNumber
+    ORDER BY ps.TotalPurchaseDollars DESC
+    ': no such column: p.Brand
+2025-08-12 22:45:12,111 - INFO - Database connection closed.
+2025-08-12 22:49:45,418 - INFO - Loading purchases.csv into table 'purchases'...
+2025-08-12 22:49:56,765 - INFO - Loaded 2372474 rows into 'purchases'.
+2025-08-12 22:49:56,765 - INFO - Loading vendor_invoice.csv into table 'vendor_invoice'...
+2025-08-12 22:49:56,985 - INFO - Loaded 5543 rows into 'vendor_invoice'.
+2025-08-12 22:49:56,985 - INFO - Loading purchase_prices.csv into table 'purchase_prices'...
+2025-08-12 22:49:57,046 - INFO - Loaded 12261 rows into 'purchase_prices'.
+2025-08-12 22:49:57,046 - INFO - Loading sales.csv into table 'sales'...
+2025-08-12 22:50:59,879 - INFO - Loaded 12825363 rows into 'sales'.
+2025-08-12 22:51:00,895 - INFO - Creating Vendor Summary Table...
+2025-08-12 22:51:53,690 - INFO - Summary shape: (10692, 14)
+2025-08-12 22:51:53,743 - DEBUG -    VendorNumber                   VendorName  Brand              Description  PurchasePrice  ActualPrice Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost
+0          1128  BROWN-FORMAN CORP             1233  Jack Daniels No 7 Black          26.27        36.99   1750                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68
+1          4425        MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99   1750                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24
+2         17035  PERNOD RICARD USA             8068         Absolut 80 Proof          18.24        24.99   1750                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22
+3          3960  DIAGEO NORTH AMERICA INC      4261   Capt Morgan Spiced Rum          16.17        22.99   1750                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07
+4          3960  DIAGEO NORTH AMERICA INC      3545          Ketel One Vodka          21.89        29.99   1750                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07
+2025-08-12 22:51:53,747 - INFO - Cleaning Data...
+2025-08-12 22:51:53,789 - INFO - Cleaned Data shape: (10692, 18)
+2025-08-12 22:51:53,818 - DEBUG -    VendorNumber                VendorName  Brand              Description  PurchasePrice  ActualPrice  Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost  GrossProfit  ProfitMargin  StockTurnover  SalesToPurchaseRatio
+0          1128         BROWN-FORMAN CORP   1233  Jack Daniels No 7 Black          26.27        36.99  1750.0                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68   1290667.91     25.297693       0.979108              1.338647
+1          4425     MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99  1750.0                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24   1015032.27     21.062810       0.976890              1.266830
+2         17035         PERNOD RICARD USA   8068         Absolut 80 Proof          18.24        24.99  1750.0                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22   1119816.92     24.675786       0.998575              1.327594
+3          3960  DIAGEO NORTH AMERICA INC   4261   Capt Morgan Spiced Rum          16.17        22.99  1750.0                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07   1214774.94     27.139908       0.993703              1.372493
+4          3960  DIAGEO NORTH AMERICA INC   3545          Ketel One Vodka          21.89        29.99  1750.0                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07   1199901.61     28.412764       0.983556              1.396897
+2025-08-12 22:51:53,818 - INFO - Ingesting Data...
+2025-08-12 22:51:54,382 - INFO - Exported vendor summary to vendor_sales_summary.csv
+2025-08-12 22:51:54,384 - INFO - Process Completed Successfully.
+2025-08-12 22:51:54,392 - INFO - Database connection closed.
+2025-08-19 10:35:11,197 - INFO - Loading purchases.csv into table 'purchases'...
+2025-08-19 10:35:22,106 - INFO - Loaded 2372474 rows into 'purchases'.
+2025-08-19 10:35:22,119 - INFO - Loading vendor_invoice.csv into table 'vendor_invoice'...
+2025-08-19 10:35:22,286 - INFO - Loaded 5543 rows into 'vendor_invoice'.
+2025-08-19 10:35:22,286 - INFO - Loading purchase_prices.csv into table 'purchase_prices'...
+2025-08-19 10:35:22,364 - INFO - Loaded 12261 rows into 'purchase_prices'.
+2025-08-19 10:35:22,365 - INFO - Loading sales.csv into table 'sales'...
+2025-08-19 10:36:28,735 - INFO - Loaded 12825363 rows into 'sales'.
+2025-08-19 10:36:29,092 - INFO - Creating Vendor Summary Table...
+2025-08-19 10:36:58,887 - INFO - Summary shape: (10692, 14)
+2025-08-19 10:36:58,906 - DEBUG -    VendorNumber                   VendorName  Brand              Description  PurchasePrice  ActualPrice Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost
+0          1128  BROWN-FORMAN CORP             1233  Jack Daniels No 7 Black          26.27        36.99   1750                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68
+1          4425        MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99   1750                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24
+2         17035  PERNOD RICARD USA             8068         Absolut 80 Proof          18.24        24.99   1750                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22
+3          3960  DIAGEO NORTH AMERICA INC      4261   Capt Morgan Spiced Rum          16.17        22.99   1750                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07
+4          3960  DIAGEO NORTH AMERICA INC      3545          Ketel One Vodka          21.89        29.99   1750                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07
+2025-08-19 10:36:58,906 - INFO - Cleaning Data...
+2025-08-19 10:36:58,924 - INFO - Cleaned Data shape: (10692, 18)
+2025-08-19 10:36:58,940 - DEBUG -    VendorNumber                VendorName  Brand              Description  PurchasePrice  ActualPrice  Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost  GrossProfit  ProfitMargin  StockTurnover  SalesToPurchaseRatio
+0          1128         BROWN-FORMAN CORP   1233  Jack Daniels No 7 Black          26.27        36.99  1750.0                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68   1290667.91     25.297693       0.979108              1.338647
+1          4425     MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99  1750.0                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24   1015032.27     21.062810       0.976890              1.266830
+2         17035         PERNOD RICARD USA   8068         Absolut 80 Proof          18.24        24.99  1750.0                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22   1119816.92     24.675786       0.998575              1.327594
+3          3960  DIAGEO NORTH AMERICA INC   4261   Capt Morgan Spiced Rum          16.17        22.99  1750.0                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07   1214774.94     27.139908       0.993703              1.372493
+4          3960  DIAGEO NORTH AMERICA INC   3545          Ketel One Vodka          21.89        29.99  1750.0                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07   1199901.61     28.412764       0.983556              1.396897
+2025-08-19 10:36:58,940 - INFO - Ingesting Data...
+2025-08-19 10:36:59,179 - INFO - Exported vendor summary to vendor_sales_summary.csv
+2025-08-19 10:36:59,180 - INFO - Process Completed Successfully.
+2025-08-19 10:36:59,188 - INFO - Database connection closed.
+2025-08-22 10:48:43,428 - INFO - Loading purchases.csv into table 'purchases'...
+2025-08-22 10:49:02,194 - INFO - Loaded 2372474 rows into 'purchases'.
+2025-08-22 10:49:02,194 - INFO - Loading vendor_invoice.csv into table 'vendor_invoice'...
+2025-08-22 10:49:02,455 - INFO - Loaded 5543 rows into 'vendor_invoice'.
+2025-08-22 10:49:02,455 - INFO - Loading purchase_prices.csv into table 'purchase_prices'...
+2025-08-22 10:49:02,609 - INFO - Loaded 12261 rows into 'purchase_prices'.
+2025-08-22 10:49:02,609 - INFO - Loading sales.csv into table 'sales'...
+2025-08-22 10:51:55,926 - INFO - Loaded 12825363 rows into 'sales'.
+2025-08-22 10:51:58,000 - INFO - Creating Vendor Summary Table...
+2025-08-22 10:53:26,101 - INFO - Summary shape: (10692, 14)
+2025-08-22 10:53:26,136 - DEBUG -    VendorNumber                   VendorName  Brand              Description  PurchasePrice  ActualPrice Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost
+0          1128  BROWN-FORMAN CORP             1233  Jack Daniels No 7 Black          26.27        36.99   1750                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68
+1          4425        MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99   1750                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24
+2         17035  PERNOD RICARD USA             8068         Absolut 80 Proof          18.24        24.99   1750                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22
+3          3960  DIAGEO NORTH AMERICA INC      4261   Capt Morgan Spiced Rum          16.17        22.99   1750                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07
+4          3960  DIAGEO NORTH AMERICA INC      3545          Ketel One Vodka          21.89        29.99   1750                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07
+2025-08-22 10:53:26,138 - INFO - Cleaning Data...
+2025-08-22 10:53:26,172 - INFO - Cleaned Data shape: (10692, 18)
+2025-08-22 10:53:26,183 - DEBUG -    VendorNumber                VendorName  Brand              Description  PurchasePrice  ActualPrice  Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost  GrossProfit  ProfitMargin  StockTurnover  SalesToPurchaseRatio
+0          1128         BROWN-FORMAN CORP   1233  Jack Daniels No 7 Black          26.27        36.99  1750.0                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68   1290667.91     25.297693       0.979108              1.338647
+1          4425     MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99  1750.0                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24   1015032.27     21.062810       0.976890              1.266830
+2         17035         PERNOD RICARD USA   8068         Absolut 80 Proof          18.24        24.99  1750.0                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22   1119816.92     24.675786       0.998575              1.327594
+3          3960  DIAGEO NORTH AMERICA INC   4261   Capt Morgan Spiced Rum          16.17        22.99  1750.0                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07   1214774.94     27.139908       0.993703              1.372493
+4          3960  DIAGEO NORTH AMERICA INC   3545          Ketel One Vodka          21.89        29.99  1750.0                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07   1199901.61     28.412764       0.983556              1.396897
+2025-08-22 10:53:26,184 - INFO - Ingesting Data...
+2025-08-22 10:53:26,894 - INFO - Exported vendor summary to vendor_sales_summary.csv
+2025-08-22 10:53:26,902 - INFO - Process Completed Successfully.
+2025-08-22 10:53:26,912 - INFO - Database connection closed.
+2025-08-30 13:08:28,999 - INFO - Loading purchases.csv into table 'purchases'...
+2025-08-30 13:08:48,974 - INFO - Loaded 2372474 rows into 'purchases'.
+2025-08-30 13:08:48,975 - INFO - Loading vendor_invoice.csv into table 'vendor_invoice'...
+2025-08-30 13:08:49,172 - INFO - Loaded 5543 rows into 'vendor_invoice'.
+2025-08-30 13:08:49,172 - INFO - Loading purchase_prices.csv into table 'purchase_prices'...
+2025-08-30 13:08:49,374 - INFO - Loaded 12261 rows into 'purchase_prices'.
+2025-08-30 13:08:49,374 - INFO - Loading sales.csv into table 'sales'...
+2025-08-30 13:11:05,443 - INFO - Loaded 12825363 rows into 'sales'.
+2025-08-30 13:11:06,433 - INFO - Creating Vendor Summary Table...
+2025-08-30 13:11:44,462 - INFO - Summary shape: (10692, 14)
+2025-08-30 13:11:44,492 - DEBUG -    VendorNumber                   VendorName  Brand              Description  PurchasePrice  ActualPrice Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost
+0          1128  BROWN-FORMAN CORP             1233  Jack Daniels No 7 Black          26.27        36.99   1750                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68
+1          4425        MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99   1750                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24
+2         17035  PERNOD RICARD USA             8068         Absolut 80 Proof          18.24        24.99   1750                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22
+3          3960  DIAGEO NORTH AMERICA INC      4261   Capt Morgan Spiced Rum          16.17        22.99   1750                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07
+4          3960  DIAGEO NORTH AMERICA INC      3545          Ketel One Vodka          21.89        29.99   1750                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07
+2025-08-30 13:11:44,492 - INFO - Cleaning Data...
+2025-08-30 13:11:44,514 - INFO - Cleaned Data shape: (10692, 18)
+2025-08-30 13:11:44,522 - DEBUG -    VendorNumber                VendorName  Brand              Description  PurchasePrice  ActualPrice  Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost  GrossProfit  ProfitMargin  StockTurnover  SalesToPurchaseRatio
+0          1128         BROWN-FORMAN CORP   1233  Jack Daniels No 7 Black          26.27        36.99  1750.0                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68   1290667.91     25.297693       0.979108              1.338647
+1          4425     MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99  1750.0                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24   1015032.27     21.062810       0.976890              1.266830
+2         17035         PERNOD RICARD USA   8068         Absolut 80 Proof          18.24        24.99  1750.0                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22   1119816.92     24.675786       0.998575              1.327594
+3          3960  DIAGEO NORTH AMERICA INC   4261   Capt Morgan Spiced Rum          16.17        22.99  1750.0                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07   1214774.94     27.139908       0.993703              1.372493
+4          3960  DIAGEO NORTH AMERICA INC   3545          Ketel One Vodka          21.89        29.99  1750.0                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07   1199901.61     28.412764       0.983556              1.396897
+2025-08-30 13:11:44,524 - INFO - Ingesting Data...
+2025-08-30 13:11:44,790 - INFO - Exported vendor summary to vendor_sales_summary.csv
+2025-08-30 13:11:44,790 - INFO - Process Completed Successfully.
+2025-08-30 13:11:44,792 - INFO - Database connection closed.
+2025-09-01 14:28:34,962 - INFO - Loading purchases.csv into table 'purchases'...
+2025-09-01 14:28:52,873 - INFO - Loaded 2372474 rows into 'purchases'.
+2025-09-01 14:28:52,875 - INFO - Loading vendor_invoice.csv into table 'vendor_invoice'...
+2025-09-01 14:28:53,087 - INFO - Loaded 5543 rows into 'vendor_invoice'.
+2025-09-01 14:28:53,087 - INFO - Loading purchase_prices.csv into table 'purchase_prices'...
+2025-09-01 14:28:53,171 - INFO - Loaded 12261 rows into 'purchase_prices'.
+2025-09-01 14:28:53,171 - INFO - Loading sales.csv into table 'sales'...
+2025-09-01 14:30:52,790 - INFO - Loaded 12825363 rows into 'sales'.
+2025-09-01 14:30:53,918 - INFO - Creating Vendor Summary Table...
+2025-09-01 14:31:45,357 - INFO - Summary shape: (10692, 14)
+2025-09-01 14:31:45,389 - DEBUG -    VendorNumber                   VendorName  Brand              Description  PurchasePrice  ActualPrice Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost
+0          1128  BROWN-FORMAN CORP             1233  Jack Daniels No 7 Black          26.27        36.99   1750                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68
+1          4425        MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99   1750                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24
+2         17035  PERNOD RICARD USA             8068         Absolut 80 Proof          18.24        24.99   1750                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22
+3          3960  DIAGEO NORTH AMERICA INC      4261   Capt Morgan Spiced Rum          16.17        22.99   1750                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07
+4          3960  DIAGEO NORTH AMERICA INC      3545          Ketel One Vodka          21.89        29.99   1750                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07
+2025-09-01 14:31:45,389 - INFO - Cleaning Data...
+2025-09-01 14:31:45,420 - INFO - Cleaned Data shape: (10692, 18)
+2025-09-01 14:31:45,436 - DEBUG -    VendorNumber                VendorName  Brand              Description  PurchasePrice  ActualPrice  Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost  GrossProfit  ProfitMargin  StockTurnover  SalesToPurchaseRatio
+0          1128         BROWN-FORMAN CORP   1233  Jack Daniels No 7 Black          26.27        36.99  1750.0                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68   1290667.91     25.297693       0.979108              1.338647
+1          4425     MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99  1750.0                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24   1015032.27     21.062810       0.976890              1.266830
+2         17035         PERNOD RICARD USA   8068         Absolut 80 Proof          18.24        24.99  1750.0                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22   1119816.92     24.675786       0.998575              1.327594
+3          3960  DIAGEO NORTH AMERICA INC   4261   Capt Morgan Spiced Rum          16.17        22.99  1750.0                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07   1214774.94     27.139908       0.993703              1.372493
+4          3960  DIAGEO NORTH AMERICA INC   3545          Ketel One Vodka          21.89        29.99  1750.0                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07   1199901.61     28.412764       0.983556              1.396897
+2025-09-01 14:31:45,436 - INFO - Ingesting Data...
+2025-09-01 14:31:45,897 - INFO - Exported vendor summary to vendor_sales_summary.csv
+2025-09-01 14:31:45,897 - INFO - Process Completed Successfully.
+2025-09-01 14:31:45,897 - INFO - Database connection closed.
+2025-09-09 11:12:22,314 - INFO - Loading purchases.csv into table 'purchases'...
+2025-09-09 11:12:51,474 - INFO - Loaded 2372474 rows into 'purchases'.
+2025-09-09 11:12:51,478 - INFO - Loading vendor_invoice.csv into table 'vendor_invoice'...
+2025-09-09 11:12:51,890 - INFO - Loaded 5543 rows into 'vendor_invoice'.
+2025-09-09 11:12:51,892 - INFO - Loading purchase_prices.csv into table 'purchase_prices'...
+2025-09-09 11:12:52,123 - INFO - Loaded 12261 rows into 'purchase_prices'.
+2025-09-09 11:12:52,128 - INFO - Loading sales.csv into table 'sales'...
+2025-09-10 09:23:28,493 - INFO - Loaded 12825363 rows into 'sales'.
+2025-09-10 09:23:48,580 - INFO - Creating Vendor Summary Table...
+2025-09-10 09:29:02,138 - INFO - Summary shape: (10692, 14)
+2025-09-10 09:29:02,187 - DEBUG -    VendorNumber                   VendorName  Brand              Description  PurchasePrice  ActualPrice Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost
+0          1128  BROWN-FORMAN CORP             1233  Jack Daniels No 7 Black          26.27        36.99   1750                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68
+1          4425        MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99   1750                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24
+2         17035  PERNOD RICARD USA             8068         Absolut 80 Proof          18.24        24.99   1750                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22
+3          3960  DIAGEO NORTH AMERICA INC      4261   Capt Morgan Spiced Rum          16.17        22.99   1750                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07
+4          3960  DIAGEO NORTH AMERICA INC      3545          Ketel One Vodka          21.89        29.99   1750                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07
+2025-09-10 09:29:02,190 - INFO - Cleaning Data...
+2025-09-10 09:29:02,237 - INFO - Cleaned Data shape: (10692, 18)
+2025-09-10 09:29:02,261 - DEBUG -    VendorNumber                VendorName  Brand              Description  PurchasePrice  ActualPrice  Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost  GrossProfit  ProfitMargin  StockTurnover  SalesToPurchaseRatio
+0          1128         BROWN-FORMAN CORP   1233  Jack Daniels No 7 Black          26.27        36.99  1750.0                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68   1290667.91     25.297693       0.979108              1.338647
+1          4425     MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99  1750.0                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24   1015032.27     21.062810       0.976890              1.266830
+2         17035         PERNOD RICARD USA   8068         Absolut 80 Proof          18.24        24.99  1750.0                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22   1119816.92     24.675786       0.998575              1.327594
+3          3960  DIAGEO NORTH AMERICA INC   4261   Capt Morgan Spiced Rum          16.17        22.99  1750.0                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07   1214774.94     27.139908       0.993703              1.372493
+4          3960  DIAGEO NORTH AMERICA INC   3545          Ketel One Vodka          21.89        29.99  1750.0                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07   1199901.61     28.412764       0.983556              1.396897
+2025-09-10 09:29:02,264 - INFO - Ingesting Data...
+2025-09-10 09:29:03,020 - INFO - Exported vendor summary to vendor_sales_summary.csv
+2025-09-10 09:29:03,020 - INFO - Process Completed Successfully.
+2025-09-10 09:29:03,034 - INFO - Database connection closed.
+2025-09-25 14:38:06,396 - INFO - Loading purchases.csv into table 'purchases'...
+2025-09-25 14:38:34,086 - INFO - Loaded 2372474 rows into 'purchases'.
+2025-09-25 14:38:34,086 - INFO - Loading vendor_invoice.csv into table 'vendor_invoice'...
+2025-09-25 14:38:34,240 - INFO - Loaded 5543 rows into 'vendor_invoice'.
+2025-09-25 14:38:34,240 - INFO - Loading purchase_prices.csv into table 'purchase_prices'...
+2025-09-25 14:38:34,318 - INFO - Loaded 12261 rows into 'purchase_prices'.
+2025-09-25 14:38:34,318 - INFO - Loading sales.csv into table 'sales'...
+2025-09-25 14:40:05,627 - INFO - Loaded 12825363 rows into 'sales'.
+2025-09-25 14:40:06,702 - INFO - Creating Vendor Summary Table...
+2025-09-25 14:41:05,857 - INFO - Summary shape: (10692, 14)
+2025-09-25 14:41:05,889 - DEBUG -    VendorNumber                   VendorName  Brand              Description  PurchasePrice  ActualPrice Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost
+0          1128  BROWN-FORMAN CORP             1233  Jack Daniels No 7 Black          26.27        36.99   1750                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68
+1          4425        MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99   1750                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24
+2         17035  PERNOD RICARD USA             8068         Absolut 80 Proof          18.24        24.99   1750                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22
+3          3960  DIAGEO NORTH AMERICA INC      4261   Capt Morgan Spiced Rum          16.17        22.99   1750                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07
+4          3960  DIAGEO NORTH AMERICA INC      3545          Ketel One Vodka          21.89        29.99   1750                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07
+2025-09-25 14:41:05,889 - INFO - Cleaning Data...
+2025-09-25 14:41:05,913 - INFO - Cleaned Data shape: (10692, 18)
+2025-09-25 14:41:05,918 - DEBUG -    VendorNumber                VendorName  Brand              Description  PurchasePrice  ActualPrice  Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost  GrossProfit  ProfitMargin  StockTurnover  SalesToPurchaseRatio
+0          1128         BROWN-FORMAN CORP   1233  Jack Daniels No 7 Black          26.27        36.99  1750.0                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68   1290667.91     25.297693       0.979108              1.338647
+1          4425     MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99  1750.0                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24   1015032.27     21.062810       0.976890              1.266830
+2         17035         PERNOD RICARD USA   8068         Absolut 80 Proof          18.24        24.99  1750.0                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22   1119816.92     24.675786       0.998575              1.327594
+3          3960  DIAGEO NORTH AMERICA INC   4261   Capt Morgan Spiced Rum          16.17        22.99  1750.0                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07   1214774.94     27.139908       0.993703              1.372493
+4          3960  DIAGEO NORTH AMERICA INC   3545          Ketel One Vodka          21.89        29.99  1750.0                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07   1199901.61     28.412764       0.983556              1.396897
+2025-09-25 14:41:05,919 - INFO - Ingesting Data...
+2025-09-25 14:41:06,128 - INFO - Exported vendor summary to vendor_sales_summary.csv
+2025-09-25 14:41:06,128 - INFO - Process Completed Successfully.
+2025-09-25 14:41:06,128 - INFO - Database connection closed.
+2025-09-30 13:09:03,045 - INFO - Loading purchases.csv into table 'purchases'...
+2025-09-30 13:09:31,697 - INFO - Loaded 2372474 rows into 'purchases'.
+2025-09-30 13:09:31,705 - INFO - Loading vendor_invoice.csv into table 'vendor_invoice'...
+2025-09-30 13:09:31,961 - INFO - Loaded 5543 rows into 'vendor_invoice'.
+2025-09-30 13:09:31,961 - INFO - Loading purchase_prices.csv into table 'purchase_prices'...
+2025-09-30 13:09:32,086 - INFO - Loaded 12261 rows into 'purchase_prices'.
+2025-09-30 13:09:32,086 - INFO - Loading sales.csv into table 'sales'...
+2025-09-30 13:10:53,297 - INFO - Loaded 12825363 rows into 'sales'.
+2025-09-30 13:10:54,238 - INFO - Creating Vendor Summary Table...
+2025-09-30 13:11:39,974 - INFO - Summary shape: (10692, 14)
+2025-09-30 13:11:39,998 - DEBUG -    VendorNumber                   VendorName  Brand              Description  PurchasePrice  ActualPrice Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost
+0          1128  BROWN-FORMAN CORP             1233  Jack Daniels No 7 Black          26.27        36.99   1750                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68
+1          4425        MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99   1750                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24
+2         17035  PERNOD RICARD USA             8068         Absolut 80 Proof          18.24        24.99   1750                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22
+3          3960  DIAGEO NORTH AMERICA INC      4261   Capt Morgan Spiced Rum          16.17        22.99   1750                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07
+4          3960  DIAGEO NORTH AMERICA INC      3545          Ketel One Vodka          21.89        29.99   1750                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07
+2025-09-30 13:11:40,000 - INFO - Cleaning Data...
+2025-09-30 13:11:40,023 - INFO - Cleaned Data shape: (10692, 18)
+2025-09-30 13:11:40,028 - DEBUG -    VendorNumber                VendorName  Brand              Description  PurchasePrice  ActualPrice  Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost  GrossProfit  ProfitMargin  StockTurnover  SalesToPurchaseRatio
+0          1128         BROWN-FORMAN CORP   1233  Jack Daniels No 7 Black          26.27        36.99  1750.0                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68   1290667.91     25.297693       0.979108              1.338647
+1          4425     MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99  1750.0                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24   1015032.27     21.062810       0.976890              1.266830
+2         17035         PERNOD RICARD USA   8068         Absolut 80 Proof          18.24        24.99  1750.0                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22   1119816.92     24.675786       0.998575              1.327594
+3          3960  DIAGEO NORTH AMERICA INC   4261   Capt Morgan Spiced Rum          16.17        22.99  1750.0                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07   1214774.94     27.139908       0.993703              1.372493
+4          3960  DIAGEO NORTH AMERICA INC   3545          Ketel One Vodka          21.89        29.99  1750.0                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07   1199901.61     28.412764       0.983556              1.396897
+2025-09-30 13:11:40,029 - INFO - Ingesting Data...
+2025-09-30 13:11:40,197 - ERROR - Error occurred: [Errno 13] Permission denied: 'vendor_sales_summary.csv'
+Traceback (most recent call last):
+  File "D:\vendor perfomence\get_vendor_summary.py", line 148, in <module>
+    clean_df.to_csv(output_csv, index=False)
+  File "d:\vendor perfomence\.venv\Lib\site-packages\pandas\util\_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "d:\vendor perfomence\.venv\Lib\site-packages\pandas\core\generic.py", line 3986, in to_csv
+    return DataFrameRenderer(formatter).to_csv(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\vendor perfomence\.venv\Lib\site-packages\pandas\io\formats\format.py", line 1014, in to_csv
+    csv_formatter.save()
+  File "d:\vendor perfomence\.venv\Lib\site-packages\pandas\io\formats\csvs.py", line 251, in save
+    with get_handle(
+         ^^^^^^^^^^^
+  File "d:\vendor perfomence\.venv\Lib\site-packages\pandas\io\common.py", line 873, in get_handle
+    handle = open(
+             ^^^^^
+PermissionError: [Errno 13] Permission denied: 'vendor_sales_summary.csv'
+2025-09-30 13:11:40,296 - INFO - Database connection closed.
+2025-09-30 13:14:15,094 - INFO - Loading purchases.csv into table 'purchases'...
+2025-09-30 13:14:31,848 - INFO - Loaded 2372474 rows into 'purchases'.
+2025-09-30 13:14:31,860 - INFO - Loading vendor_invoice.csv into table 'vendor_invoice'...
+2025-09-30 13:14:32,105 - INFO - Loaded 5543 rows into 'vendor_invoice'.
+2025-09-30 13:14:32,105 - INFO - Loading purchase_prices.csv into table 'purchase_prices'...
+2025-09-30 13:14:32,215 - INFO - Loaded 12261 rows into 'purchase_prices'.
+2025-09-30 13:14:32,215 - INFO - Loading sales.csv into table 'sales'...
+2025-09-30 13:17:13,681 - INFO - Loaded 12825363 rows into 'sales'.
+2025-09-30 13:17:14,676 - INFO - Creating Vendor Summary Table...
+2025-09-30 13:17:48,297 - INFO - Summary shape: (10692, 14)
+2025-09-30 13:17:48,322 - DEBUG -    VendorNumber                   VendorName  Brand              Description  PurchasePrice  ActualPrice Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost
+0          1128  BROWN-FORMAN CORP             1233  Jack Daniels No 7 Black          26.27        36.99   1750                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68
+1          4425        MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99   1750                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24
+2         17035  PERNOD RICARD USA             8068         Absolut 80 Proof          18.24        24.99   1750                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22
+3          3960  DIAGEO NORTH AMERICA INC      4261   Capt Morgan Spiced Rum          16.17        22.99   1750                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07
+4          3960  DIAGEO NORTH AMERICA INC      3545          Ketel One Vodka          21.89        29.99   1750                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07
+2025-09-30 13:17:48,323 - INFO - Cleaning Data...
+2025-09-30 13:17:48,368 - INFO - Cleaned Data shape: (10692, 18)
+2025-09-30 13:17:48,380 - DEBUG -    VendorNumber                VendorName  Brand              Description  PurchasePrice  ActualPrice  Volume  TotalPurchaseQuantity  TotalPurchaseDollars  TotalSalesQuantity  TotalSalesDollars  TotalSalesPrice  TotalExciseTax  FreightCost  GrossProfit  ProfitMargin  StockTurnover  SalesToPurchaseRatio
+0          1128         BROWN-FORMAN CORP   1233  Jack Daniels No 7 Black          26.27        36.99  1750.0                 145080            3811251.60            142049.0         5101919.51        672819.31       260999.20     68601.68   1290667.91     25.297693       0.979108              1.338647
+1          4425     MARTIGNETTI COMPANIES   3405    Tito's Handmade Vodka          23.19        28.99  1750.0                 164038            3804041.22            160247.0         4819073.49        561512.37       294438.66    144929.24   1015032.27     21.062810       0.976890              1.266830
+2         17035         PERNOD RICARD USA   8068         Absolut 80 Proof          18.24        24.99  1750.0                 187407            3418303.68            187140.0         4538120.60        461140.15       343854.07    123780.22   1119816.92     24.675786       0.998575              1.327594
+3          3960  DIAGEO NORTH AMERICA INC   4261   Capt Morgan Spiced Rum          16.17        22.99  1750.0                 201682            3261197.94            200412.0         4475972.88        420050.01       368242.80    257032.07   1214774.94     27.139908       0.993703              1.372493
+4          3960  DIAGEO NORTH AMERICA INC   3545          Ketel One Vodka          21.89        29.99  1750.0                 138109            3023206.01            135838.0         4223107.62        545778.28       249587.83    257032.07   1199901.61     28.412764       0.983556              1.396897
+2025-09-30 13:17:48,382 - INFO - Ingesting Data...
+2025-09-30 13:17:48,751 - INFO - Exported vendor summary to vendor_sales_summary.csv
+2025-09-30 13:17:48,751 - INFO - Process Completed Successfully.
+2025-09-30 13:17:48,751 - INFO - Database connection closed.
